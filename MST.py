@@ -37,6 +37,8 @@ class Graph:
 
         self.r = mR.randomConnections(self)
 
+    def newConnection(self):
+        self.r.createRandomNewConnection(self)
 
     def addVertex(self, pairList, length):
         self.graph[pairList[0]][pairList[1]] = length
@@ -79,13 +81,3 @@ class Graph:
                     dist[v] = dist[u] + self.graph[u][v]
 
         return dist
-
-    def newConnection(self):
-        self.r.createRandomNewConnection(self)
-
-def getEfficiency(Graph):
-    Graph.dijkstra()
-    return (sum(Graph.totalDistanceList) / (Graph.V * (Graph.V - 1)))**(-1)
-
-def getRobustness(Graph):
-    print()
