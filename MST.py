@@ -1,24 +1,24 @@
-import sys  # Library for INT_MAX
+import makeRandomEdge as mRE
+import numpy as np
 from random import *
-import makeRandomVertex as mR
+import scipy.linalg as la
 
 
 class Graph:
 
+    # Creates an empty matrix using numpy. Also creates
+    # an a place to store the total distances in network,
+    # Finally creates new connections in network
     def __init__(self, vertices):
         self.V = vertices
-        self.graph = [[0 for column in range(vertices)]
-                      for row in range(vertices)]
+        self.graph = np.array([[0 for column in range(vertices)]
+                      for row in range(vertices)])
         self.totalDistanceList = []
-        self.r = mR.randomConnections(self)
+        self.r = mRE.randomConnections(self)
 
-    def getNewMST(self, parent):
-        initialMST = []
-        for i in range(0, self.V):
-            vertices = [parent[i], i]
-            initialMST.append(vertices)
-        return initialMST
 
+    # Creates random connection, uses dijikstra to check if there's already
+    # a connection, and guarantees no repeats
     def newMST(self):
         self.newAdjMattrix = False
         parent = [None] * (self.V - 1)
@@ -31,24 +31,27 @@ class Graph:
             while(parent[x] is None):
                 n = choice(nodes)
                 nodes.remove(n)
-                if dist[n] == sys.maxsize:
+                if dist[n] == np.iinfo(np.int32).max:
                     parent[x] = n
-                    self.addVertex([x, n], 1)
+                    self.addEdge([x, n], 1)
+        #Creates list of the 0's in matrix
+        self.r = mRE.randomConnections(self)
 
-        self.r = mR.randomConnections(self)
+
 
     def newConnection(self):
         self.r.createRandomNewConnection(self)
 
-    def addVertex(self, pairList, length):
+    #Creates a new connection between a pair list witha  given length
+    def addEdge(self, pairList, length):
         self.graph[pairList[0]][pairList[1]] = length
         self.graph[pairList[1]][pairList[0]] = length
         if (pairList[0] == pairList[1]):
             self.graph[i][j] = 0
 
-
+    #Helps run dijikstra
     def minDistance(self, dist, sptSet):
-        min = sys.maxsize
+        min = np.iinfo(np.int32).max
         min_index = 0
 
         for v in range(self.V):
@@ -58,14 +61,16 @@ class Graph:
 
         return min_index
 
+    #Runs dijikstra's algorithim for all nodes and adds to list
     def dijkstra(self):
         self.totalDistanceList.clear()
         for src in range(self.V):
             dist = self.dijkstraIndividual(src)
             self.totalDistanceList.extend(dist)
 
+    #Runs dijikstra for a specific node
     def dijkstraIndividual(self, src):
-        dist = [sys.maxsize] * self.V
+        dist = [np.iinfo(np.int32).max] * self.V
         dist[src] = 0
         sptSet = [False] * self.V
 
@@ -81,3 +86,8 @@ class Graph:
                     dist[v] = dist[u] + self.graph[u][v]
 
         return dist
+
+    def eigenvalues(self):
+        eval, evec = la.eig(self.graph)
+        return (eval)
+
