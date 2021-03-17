@@ -1,23 +1,24 @@
-from random import choice
+import random as random
 
 class randomConnections:
 
-    def __init__(self, Graph):
+    def __init__(self, Graph, n):
         self.listOfNoConnections = []
-        self.listOfZeroes(Graph)
+        self.randomIndex = 0
+        self.listOfZeroes(Graph, n)
 
-    def listOfZeroes(self, Graph):
+    def listOfZeroes(self, Graph, n):
         for i in range(1, Graph.V):
             for j in range(i):
-                if Graph.graph[i][j] == 0:
+                if Graph.graph[i][j] == n:
                     nonConnectedPair = [i, j]
                     self.listOfNoConnections.append(nonConnectedPair)
 
-    def createRandomNewConnection(self, Graph):
-        randomConnection = choice(self.listOfNoConnections)
-        self.listOfNoConnections.remove(randomConnection)
-        Graph.addEdge(randomConnection, 1)
+        random.shuffle(self.listOfNoConnections)
 
+    def createRandomNewConnection(self, Graph, n):
+        Graph.addEdge(self.listOfNoConnections[self.randomIndex], n)
+        self.randomIndex+=1
 
 
 

@@ -10,28 +10,34 @@ import robustness as rbs
 
 def main():
    #Gets User input
-    initial, totalnodes, inc = get_user_input()
+    initial, groups = get_user_input() #, totalnodes, inc
 
     #Creates Plots according to user inputs
-    numPlots = int(((totalnodes - initial)/inc)) + 1
+    numPlots = 1#int(((totalnodes - initial)/inc)) + 1
     fig, axs = plt.subplots(numPlots, sharex=True)
     fig.suptitle('Efficiency vs Edges at nodes')
     i = 0
 
     #Loops user inputs so creates n starting points with nodes,
-    for num1 in range(initial, totalnodes + 1, inc):
+    for num1 in range(initial, initial+1, 1): #totalnodes + 1, inc):
             g = mst.Graph(num1)
             g.newMST()
+            edges = int((num1 * (num1 - 1))/2 - (num1 - 1))+1
+            interval = int(float(edges)*float(groups/100))
 
-            Data = {'Edges': list(range(int((num1 * (num1 - 1))/2 - (num1 - 1)))),
+            Data = {'Edges': list(range(1, edges, interval)),
                     'Efficiency': [],
-                    'Network Connectivity': [],
-                    'Robustness': []
+                    'Efficiency Alt': [],
+                    # 'Network Connectivity': [],
+                    # 'Robustness': [],
+                    # 'Edge Robustness': []
                     }
-            add_Network_Data(g, Data)
-
-            df = pd.DataFrame(Data, columns=['Edges', 'Efficiency', 'Network Connectivity',
-                                             'Robustness'])
+            add_Network_Data(g, Data, interval)
+            df = pd.DataFrame(Data, columns=['Edges', 'Efficiency',
+                                             'Efficiency Alt',
+                                             # 'Network Connectivity', 'Robustness',
+                                             # 'Edge Robustness'
+                                             ])
             name = 'Nodes=' + str(num1)
 
             create_Graph(numPlots, axs, i, df, name)
@@ -47,11 +53,12 @@ def get_user_input():
     while True:
         try:
             initial = int((input("Starting point \n")))
-            totalnodes = int((input("Type number of nodes \n")))
-            inc = int((input("Increment size \n")))
-            if (inc <= 0 or int(((totalnodes - initial)/inc)) < 0 or
-                    initial < 3 or totalnodes < initial):
-                raise ValueError
+            # totalnodes = int((input("Type number of nodes \n")))
+            # inc = int((input("Increment size \n")))
+            groups = int((input("percentage of group added as a whole number \n")))
+            # if (inc <= 0 or int(((totalnodes - initial)/inc)) < 0 or
+            #         initial < 3 or totalnodes < initial or groups < 0):
+            #     raise ValueError
             break
 
         except ValueError:
@@ -60,15 +67,18 @@ def get_user_input():
             if(input("Exit? y to exit\n")[0] == 'y'):
                 exit()
 
-    return initial, totalnodes, inc
+    return initial, groups #totalnodes, inc
 
-def add_Network_Data(g, Data):
+def add_Network_Data(g, Data, interval):
     while True:
         try:
-            g.newConnection()
+            g.dist()
             Data['Efficiency'].append(eff.getEfficiency(g))
-            Data['Network Connectivity'].append(rbs.getNetworkConnectivity(g))
-            Data['Robustness'].append(rbs.getCriticalRemovalFraction(g))
+            Data['Efficiency Alt'].append(eff.getEfficiency2(g))
+            # Data['Network Connectivity'].append(rbs.getNetworkConnectivity(g))
+            # Data['Robustness'].append(rbs.getCriticalRemovalFraction(g))
+            # Data['Edge Robustness'].append(rbs.getEdgeRobustness(g))
+            g.newConnection(interval, 1)
         except IndexError:
             print("Network fully connected")
             break
@@ -81,8 +91,10 @@ def create_Graph(numPlots, axs, i, df, name):
         # Dictionary for the dataframe measure
         measure = {
             'E': 'Efficiency',
+            'E2': 'Efficiency Alt',
             'R': 'Robustness',
-            'N': 'Network Connectivity'
+            'N': 'Network Connectivity',
+            'ER': 'Edge Robustness'
         }
         try:
             if numPlots == 1:
@@ -93,7 +105,7 @@ def create_Graph(numPlots, axs, i, df, name):
                 axs[i].set_title(name)
 
         except KeyError:
-            print("Invalid Input, input N, R, or E or nothing for just data")
+            print("Invalid Input, input N, R, E2, or E or nothing for just data")
             exit()
 
 def create_dataframe_folder(df, name):
