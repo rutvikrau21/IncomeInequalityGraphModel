@@ -56,7 +56,6 @@ class Graph:
     #Runs dijikstra's algorithim for all nodes and adds to list
     def dist(self):
         self.totalDistanceList.clear()
-        print(n)
         dist = spr.csgraph.shortest_path(self.graph, method='FW', directed=False, unweighted=True)
         for x in dist:
             self.totalDistanceList.extend(x)
